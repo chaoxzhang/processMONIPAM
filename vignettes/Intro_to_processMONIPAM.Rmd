@@ -18,7 +18,39 @@ knitr::opts_chunk$set(
 This is an R package used to 
 
 
-```{r setup}
+```{r}
 library(processMONIPAM)
-
+getwd()
 ```
+To begin with let's load the required R packages
+
+```{r packages, include = FALSE}
+if (!require("plyr", quietly=TRUE)) {
+    install.packages("plyr")
+    library("plyr")
+}
+
+package.list<-c('plyr','splitstackshape')
+lapply(package.list, FUN = function(p) {
+   if(!do.call("require", list(p))) {
+     install.packages(p)
+     libary(p)
+   } 
+})
+```
+
+```{r}
+MONI2014.2015<-
+  read.MONIPAM(source.path=system.file("extdata/2014-2015/",package = "processMONIPAM"),
+               pam.pattern = '.PAM',
+               save.path = getwd(),
+               site.lat =61.84562,
+               site.lon = 24.29077,
+               local.tz = 'EET',
+               tz.summer =  3,
+               tz.winter = 2,
+               measure.time = 'winter')
+list.files("https://github.com/chaoxzhang/processMONIPAM/tree/b91d24d802f385a03b1c3691543fa08d80f3690d/inst/extdata/2014-2015/",full.names = T)
+```
+
+
