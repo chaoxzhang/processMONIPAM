@@ -84,8 +84,14 @@ read.MONIPAM<-function(source.path,#folder where files stored
 
       raw<-read.delim(filenames[fn],header = F)
       raw$ID<-1:nrow(raw)
-
-      if (nrow(raw[grep('Device|device',raw$V1),])==0){#when no head information
+      head.count<-nrow(raw[grep('Device|device',raw$V1),])
+      data.count<-nrow(raw[grep('SG',raw$V1),])
+      newdevice.count<-nrow(raw[grep('New',raw$V1),])
+      treenum.info<-length(cSplit(raw[grep('Device|device',raw$V1),],
+                    'V1',sep=';',type.convert = F))
+      head.num.count<-nrow(unique(cSplit(raw[grep('Device|device',raw$V1),],'V1',sep = ';',type.convert = F)[,5]))
+      tree.num.count<-nrow(unique(cSplit(raw[grep('Device|device',raw$V1),],'V1',sep = ';',type.convert = F)[,8]))
+      if (head.length==0){#when no head information
         #was recorded
         nohead<-
           paste(filenames[fn],' is read into the file but this file do not
@@ -94,7 +100,7 @@ read.MONIPAM<-function(source.path,#folder where files stored
         print(nohead)
         write.table(nohead,append = T,col.names = F,row.names = F,
                     file = paste0(save.path,'/rawFile_noHeadInfo.txt'))
-        raw.split.col<-cSplit(raw,'V1', sep = ';')
+        raw.split.col<-cSplit(raw,'V1', sep = ';',type.convert = F)
         raw.remain<-raw.split.col[,c(1:3,6,8:13)]
         names(raw.remain)<-c('ID','YYMMDD','HHMMSS','head','F_','Fm_',
                              'par_moni','Yield','ETR','temp_moni')
@@ -108,12 +114,12 @@ read.MONIPAM<-function(source.path,#folder where files stored
         print(paste0(shortnames[fn],' is saved.'))
         return(raw.remain)
 
-      } else if (nrow(raw[grep('SG',raw$V1),])==0) {#when no data was recorded
+      } else if (data.count==0) {#when no data was recorded
         nodata<-paste0(filenames[fn],' did not record the data!')
         print(nodata)
         write.table(nodata,append = T,col.names = F,row.names = F,
                     file = paste0(save.path,'/rawFile_noDataRecord.txt'))
-      } else if (nrow(raw[grep('New',raw$V1),])>=1) {#when new device was added
+      } else if (newdevice.count>=1) {#when new device was added
         raw.newhead<-raw[grep('New',raw$V1),]
         newhead<-
           paste(filenames[fn],' is not read into the file because new device(s)
@@ -121,9 +127,8 @@ read.MONIPAM<-function(source.path,#folder where files stored
         print(newhead);print(as.character(raw.newhead[[1]]))
         write.table(newhead,append = T,col.names = F,row.names = F,
                     file = paste0(save.path,'/rawFile_newDeviceAdded.txt'))
-      } else if (length(cSplit(raw[grep('Device|device',raw$V1),],
-                               'V1',sep=';'))==7) {
-        #when no tree_num information was recored
+      } else if (treenum.info) {
+        #when no tree_num information was recorded
         treeNoDefine <-
           paste0(filenames[fn],
                  ' is read into the file but this file do not define tree_num
@@ -135,7 +140,7 @@ read.MONIPAM<-function(source.path,#folder where files stored
 
         raw.head.1col<-raw[grep('Device|device',raw$V1),]
         raw.1col<-raw[grep('SG',raw$V1),]
-        raw.split.col<-cSplit(raw.1col,'V1', sep = ';')
+        raw.split.col<-cSplit(raw.1col,'V1', sep = ';',type.convert = F)
         raw.remain<-raw.split.col[,c(1:3,6,8:13)]
         names(raw.remain)<-c('ID','YYMMDD','HHMMSS','head','F_','Fm_',
                              'par_moni','Yield','ETR','temp_moni')
@@ -149,10 +154,7 @@ read.MONIPAM<-function(source.path,#folder where files stored
         return(raw.remain)
 
 
-      } else if (nrow(unique(cSplit(raw[grep('Device|device',raw$V1),],'V1',
-                                    sep = ';')[,5]))<
-                 nrow(unique(cSplit(raw[grep('Device|device',raw$V1),],'V1',
-                                    sep = ';')[,8]))){
+      } else if (head.num.count<tree.num.count){
         #when there is less head_number [column 5] than tree_number[column 8],
         #which means the new head(device) is added
         error<-paste0(filenames[fn],' is not read into the file
@@ -163,14 +165,14 @@ read.MONIPAM<-function(source.path,#folder where files stored
                     append = T,col.names = F,row.names = F)
       } else {
         raw.head.1col<-raw[grep('Device|device',raw$V1),]
-        raw.head<-cSplit(raw.head.1col,'V1', sep = ';')
+        raw.head<-cSplit(raw.head.1col,'V1', sep = ';',type.convert = F)
         names(raw.head)<-c('ID','YYMMDD','HHMMSS','PARAMETER',
                           'head','V2','DEVICE','tree_num')
         raw.head<-raw.head[!raw.head$head==0,]
         raw.head$head<-as.factor(raw.head$head)
         raw.head$tree_num<-as.factor(raw.head$tree_num)
         raw.1col<-raw[grep('SG',raw$V1),]
-        raw.split.col<-cSplit(raw.1col,'V1', sep = ';')
+        raw.split.col<-cSplit(raw.1col,'V1', sep = ';',type.convert = F)
         raw.split.col<-raw.split.col[,c(1:3,6,8:13)]
         names(raw.split.col)<-c('ID','YYMMDD','HHMMSS','head','F_','Fm_',
                                 'par_moni','Yield','ETR','temp_moni')
@@ -258,7 +260,7 @@ read.MONIPAM<-function(source.path,#folder where files stored
             idvar = 'group2',direction = 'wide')
   names(range.date)<-gsub(pattern = 'datetime.',replacement = '',
                           names(range.date))
-  range.date<-cSplit(range.date,'group2',sep = ' ')
+  range.date<-cSplit(range.date,'group2',sep = ' ',type.convert = F)
   names(range.date)[3:4]<-c('head','tree_num')
   write.table(range.date[,c('head','tree_num','start.date','end.date')],file =
                 paste0(save.path,'/preprocesMONI_head_timerange_',
@@ -301,6 +303,7 @@ read.MONIPAM<-function(source.path,#folder where files stored
       #later this will be the filled column
       fill.data$ymdh<-ymd_hms(paste0(date(fill.data$datetime),
                                      hour(fill.data$datetime),':00:00'))
+      #complete from tidyr package
       fill.dategap<-
         complete(fill.data,ymdh=time,nesting(head,tree_num))
       #fill empty date column
@@ -324,6 +327,7 @@ read.MONIPAM<-function(source.path,#folder where files stored
 
   ##<<- 5. add sunlight information into the file
   ##<<-    for later easily data filter/cleaning and visualization purpose
+  #getSunlightTimes from suncalc package
   suntime<-
     getSunlightTimes(date = seq(range(preproces.filldate$date)[1],
                                 range(preproces.filldate$date)[2],

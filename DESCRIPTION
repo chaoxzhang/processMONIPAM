@@ -12,9 +12,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Depends: 
     R (>= 2.10)
-    splitstackshape
-    plyr
-    tidyvise
 LazyData: true
 Suggests: 
     knitr,
