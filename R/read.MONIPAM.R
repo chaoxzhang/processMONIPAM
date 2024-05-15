@@ -62,6 +62,7 @@ organize.monidata<-function(data,shortnames,i){
 #' @param measure.time which time zone used for measurement: 'winter','summer' or 'local'
 #'
 #' @return list 1: combined original data; list 2: combined organized data and extra columns for further data cleaning purpose
+#'
 #' @export
 read.MONIPAM<-function(source.path,#folder where files stored
                        pam.pattern,#MONI-PAM pattern ('.pam' or '.PAM')
