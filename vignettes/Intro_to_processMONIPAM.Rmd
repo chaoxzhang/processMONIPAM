@@ -69,7 +69,7 @@ before MONIPAM data cleaning (data filtering), we need organize MONIPAM data and
 
 ```{r}
 MONI2014.2015<-
-  read.MONIPAM(source.path=system.file("extdata/2014-2015/",package = "processMONIPAM"),
+  readMONIPAM(source.path=system.file("extdata/2014-2015/",package = "processMONIPAM"),
                pam.pattern = '.PAM',
                save.path = getwd(),# it is better to modify this to your local path
                site.lat =61.84562, # hyytiala latitude
@@ -394,10 +394,6 @@ plotSeasonPara(season.param = seas.para,save.path = 'figures/figure_seasonal_par
 ```
 
 plot and save diurnal parameter figures
-```{r}
-diurn.para<-fread('get parameters/2014_2015_diurnal_parameters.csv')
-list.files('get parameters')
-```
 
 ```{r fig.height=10,fig.width=15}
 # plot and save rate constant parameter figure to local folder
@@ -433,7 +429,7 @@ plotNPQYield(diurnal.para = diurn.para,
 
 ```{r}
 MONI2016.2017<-
-  read.MONIPAM(source.path=system.file("extdata/2016-2017/",package = "processMONIPAM"),
+  readMONIPAM(source.path=system.file("extdata/2016-2017/",package = "processMONIPAM"),
                pam.pattern = '.PAM',
                save.path = getwd(),# it is better to modify this to your local path
                site.lat =61.84562, # hyytiala latitude
@@ -663,12 +659,12 @@ plot and save diurnal parameter figures
 # plot and save rate constant parameter figure to local folder
 # PQ,NPQ,NPQr
 plotDiurnRateConstant(diurnal.para = diurn.para,
-                      diary = T,diary.data = diary_2014_2015,
+                      diary = F,
                       save.path = 'figures/figure_diurnal_parameters')
 # plot and save quenching parameter figure to local folder
 #qLT and qLr
 plotQuench(diurnal.para = diurn.para,
-           diary = T,diary.data = diary_2014_2015,
+           diary = F,
            save.path = 'figures/figure_diurnal_parameters')
 
 

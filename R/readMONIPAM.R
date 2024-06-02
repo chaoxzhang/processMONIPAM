@@ -64,7 +64,7 @@ organize.monidata<-function(data,shortnames,i){
 #' @return list 1: combined original data; list 2: combined organized data and extra columns for further data cleaning purpose
 #'
 #' @export
-read.MONIPAM<-function(source.path,#folder where files stored
+readMONIPAM<-function(source.path,#folder where files stored
                        pam.pattern,#MONI-PAM pattern ('.pam' or '.PAM')
                        save.path,#folder to save the exported data
                        site.lat,#latitude of the study site

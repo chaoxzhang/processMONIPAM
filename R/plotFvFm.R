@@ -1,12 +1,3 @@
-#' obtain extreme values of MONI-PAM Fv/Fm data
-#'
-#' These extreme values of MONI-PAM data will be used for MONI-PAM data visualization
-#'
-#'
-#' @param moni.fvfm MONI-PAM fvfm data retrieved from [FindFvFm] function in this R package
-#'
-#' @return [scaleFvFm] will return a data.table which contains the maximum and minimum values of F0,FM, Fv/Fm, PAR, and temperature values for each MONI-head respectively.
-#' @export
 scaleFvFm<-function(moni.fvfm){
 
   data<-moni.fvfm %>% dplyr::select(-c(date,head,tree_num))
