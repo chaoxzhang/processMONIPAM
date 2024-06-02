@@ -16,8 +16,11 @@ knitr::opts_chunk$set(
 knitr::opts_chunk$set(eval = FALSE)
 
 ```
+# Install processMONIPAM package using:
 
-
+```{r}
+remotes::install_github("chaoxzhang/processMONIPAM")
+```
 
 ```{r}
 # load processMONIPAM package
