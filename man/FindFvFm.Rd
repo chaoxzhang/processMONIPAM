@@ -4,10 +4,10 @@
 \alias{FindFvFm}
 \title{Retrieve Fv/Fm data from MONI-PAM data}
 \usage{
-FindFvFm(moni.data, save.path, save.title, save.file)
+FindFvFm(moni.data,save.path,save.title, save.file)
 }
 \arguments{
-\item{moni.data}{a combined organized MONI-PAM data which is generated from \link{read.MONIPAM} function, or a MONI-PAM data after data filtering which is generated from filter function in this package such as filter1.NA, filter2.night and so on.}
+\item{moni.data}{a combined organized MONI-PAM data which is generated from \link{readMONIPAM} function, or a MONI-PAM data after data filtering which is generated from filter function in this package such as filter1.NA, filter2.night and so on.}
 
 \item{save.path}{local folder for saving your output data}
 

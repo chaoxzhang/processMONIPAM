@@ -4,7 +4,7 @@
 \alias{filter5.lowfm}
 \title{Filter MONI-PAM data step 5,remove additionally abnormal low Fm’ data that is or are adjacent to previously filtered data}
 \usage{
-filter5.lowfm(moni.data, save.path, save.file, fm1 = 0.2, fmPhiPratio = 3)
+filter5.lowfm(moni.data,save.path,save.file,fm1=0.2,fmPhiPratio=3)
 }
 \arguments{
 \item{moni.data}{a data.table or data.frame MONI-PAM data generated from \link{filter4.maxYield} function.}

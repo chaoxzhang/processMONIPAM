@@ -47,6 +47,7 @@ filter.night.fc<-function(data,period,fm1,fmPhiPratio){
 #'
 #' Details see Zhang et al.,202X. paper link url.
 #'
+#' @usage filter2.night(moni.data,fm1=0.03,fmPhiPratio=3,save.path,save.file)
 #' @param moni.data a data.table or data.frame MONI-PAM data generated from [filter1.NA] function.
 #' @param fm1 the threshold of percentage change of Fm' between time2 and time1. Default value is 0.03, we recommend this argument can be adjusted from 0.01 to 0.05 by an interval of 0.01.
 #' @param fmPhiPratio the threshold of ratio between percentage change of Fm' between time2 and time1 and of Yield between time2 and time1. Default value is 3, we recommend this argument can be adjust between 2 and 5 by an interval of 1
@@ -63,7 +64,7 @@ filter2.night<-function(moni.data,
 {
   print('This function will run mins...')
   start.time<-Sys.time()
-  moni.data<-format.monidata(moni.data = moni.data)
+  moni.data<-formatMONIdata(moni.data = moni.data)
 
   night.filter<-
     ldply(levels(moni.data$head_tree),function(i){

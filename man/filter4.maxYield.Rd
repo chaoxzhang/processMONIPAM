@@ -4,7 +4,7 @@
 \alias{filter4.maxYield}
 \title{Filter MONI-PAM data step 4,remove abnormal maximum Yield (or Fv/Fm) value}
 \usage{
-filter4.maxYield(moni.data, save.path, save.file, fm1 = 0.15, fmPhiPratio = 3)
+filter4.maxYield(moni.data,save.path,save.file,fm1=0.15,fmPhiPratio=3)
 }
 \arguments{
 \item{moni.data}{a data.table or data.frame MONI-PAM data generated from \link{filter3.day} function.}

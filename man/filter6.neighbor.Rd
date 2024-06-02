@@ -4,7 +4,7 @@
 \alias{filter6.neighbor}
 \title{Filter MONI-PAM data step 6,remove additionally a few more data points adjacent to the previously filtered data}
 \usage{
-filter6.neighbor(moni.data, save.path, save.file, expand.time)
+filter6.neighbor(moni.data,save.path,save.file,expand.time)
 }
 \arguments{
 \item{moni.data}{a data.table or data.frame MONI-PAM data generated from \link{filter5.lowfm} function.}

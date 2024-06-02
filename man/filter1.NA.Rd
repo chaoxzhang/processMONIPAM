@@ -4,10 +4,10 @@
 \alias{filter1.NA}
 \title{Filter MONI-PAM data step 1,remove unrecorded or abnormal low F' and Fm' value}
 \usage{
-filter1.NA(moni.data, save.path, save.file)
+filter1.NA(moni.data,save.path,save.file)
 }
 \arguments{
-\item{moni.data}{a combined organized MONI-PAM data which is generated from \link{read.MONIPAM} function.}
+\item{moni.data}{a combined organized MONI-PAM data which is generated from \link{readMONIPAM} function.}
 
 \item{save.path}{local folder for saving your output file}
 
@@ -17,5 +17,5 @@ filter1.NA(moni.data, save.path, save.file)
 This function will return a data table. Meanwhile, if save.file = TRUE, the output data.table will also be saved into local folder as a 'MONI_Year1_Year2_filter1NA.dat' file, where Year1 and Year2 are the minimum and maximum year during this observation season. This output file will contain two new column named as 'flag1.NA.Yield' and 'flag.all'. These two columns only contain two values: 0 and 1, where 0 means F', Fm' and Yield in corresponding row(s) are abnormal data and should be removed from the dataset and 1 means good dataset. 'flag1.NA.Yield' is used to mark which data is/are abnormal data from the data filtering function. 'flag.all' is used to mark all the abnormal data from the all data filtering function.
 }
 \description{
-Filter MONI-PAM data step 1,remove unrecorded or abnormal low F' and Fm' value
+Details see Zhang et al.,202X. paper link url.
 }

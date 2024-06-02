@@ -1,131 +1,138 @@
+# filter logical function 1
 filter.o.fc<-function(data,fm1,fmPhiPratio){
 
-  data=data[data$flag3.day==1,c('date','datetime','dateBack12h','datetimeBack12h',
+  data<-
+    data %>%
+    subset(flag3.day==1,select=c('date','datetime','dateBack12h','datetimeBack12h',
                                 'solarNoon','dawn','sunrise',
                                 'sunsetStart', 'dusk',
                                 'temp_moni','par_moni', 'F_','Fm_',
-                                'Yield','flag3.day')]
+                                'Yield','flag3.day'))
 
   moni.day<-ldply(unique(data$date),function(i){
+
     oneday<-
-      na.omit(data[data$date==i&
-                     data$datetime>=data$dawn&
-                     data$datetime<=data$dusk,])
-    oneday$ID<-1:nrow(oneday)
-    oneday<-oneday[order(oneday$datetime),]
+      data %>%
+      subset(date==i&datetime>=dawn&datetime<=dusk) %>%
+      na.omit()
+    if (isTRUE(nrow(oneday)>0)){ # run following code only if data exist
 
-    #calculate percentage changes in Yield, Fm', and F'
-    oneday$vary.Yield<-c(NA,diff(oneday$Yield))/oneday$Yield
-    oneday$vary.Fm<- c(NA,diff(oneday$Fm_))/oneday$Fm_
-    oneday$vary.F<-c(NA,diff(oneday$F_))/oneday$F_
-    #select data when Fm has consecutively decrease and/or increase.
-    fm.dec<-oneday[with(rle(oneday$vary.Fm<0&oneday$vary.Yield>0),
-                        rep(lengths, lengths))>=2&
-                     with(rle(oneday$vary.Fm<0&oneday$vary.Yield>0),
-                          rep(values, lengths))==TRUE,]
-    fm.inc<-oneday[with(rle(oneday$vary.Fm>0),rep(lengths, lengths))>=2&
-                     with(rle(oneday$vary.Fm>0),
-                          rep(values, lengths))==TRUE,]
-    if (nrow(fm.inc)>0){
-      inc.groupID<-
-        do.call(rbind,by(fm.inc,cumsum(c(0,diff(fm.inc$ID)!=1)),
-                         function(g) data.frame(IDmin=min(g$ID),IDmax=max(g$ID),
-                                                IDrange=diff(range(g$ID)))))
-      fm.inc<-
-        ldply(1:nrow(inc.groupID),function(i){
-          if(nrow(inc.groupID)>0){
-            fm.inc<-fm.inc[fm.inc$ID>=inc.groupID[i,]$IDmin&
-                             fm.inc$ID<=inc.groupID[i,]$IDmax,]
-          } else {fm.inc=fm.inc}
-          sum.fm<-sum(fm.inc$vary.Fm,na.rm=T)
-          sum.Yield.dec<-
-            sum(abs(fm.inc$vary.Yield[fm.inc$vary.Yield<0]),na.rm=T)
-          # total increase in Fm is equal or more than 20% and
-          # total decrease in Yield is equal or more than 10%
-          if (sum.fm>=0.2&sum.Yield.dec>=0.1){return(fm.inc)}
+      oneday$ID<-1:nrow(oneday)
+      oneday<-oneday[order(oneday$datetime),]
 
-        })}
+      #calculate percentage changes in Yield, Fm', and F'
+      oneday$vary.Yield<-c(NA,diff(oneday$Yield))/oneday$Yield
+      oneday$vary.Fm<- c(NA,diff(oneday$Fm_))/oneday$Fm_
+      oneday$vary.F<-c(NA,diff(oneday$F_))/oneday$F_
+      #select data when Fm has consecutively decrease and/or increase.
+      fm.dec<-oneday[with(rle(oneday$vary.Fm<0&oneday$vary.Yield>0),
+                          rep(lengths, lengths))>=2&
+                       with(rle(oneday$vary.Fm<0&oneday$vary.Yield>0),
+                            rep(values, lengths))==TRUE,]
+      fm.inc<-oneday[with(rle(oneday$vary.Fm>0),rep(lengths, lengths))>=2&
+                       with(rle(oneday$vary.Fm>0),
+                            rep(values, lengths))==TRUE,]
+      if (isTRUE(nrow(fm.inc)>0)){
+        inc.groupID<-
+          do.call(rbind,by(fm.inc,cumsum(c(0,diff(fm.inc$ID)!=1)),
+                           function(g) data.frame(IDmin=min(g$ID),IDmax=max(g$ID),
+                                                  IDrange=diff(range(g$ID)))))
+        fm.inc<-
+          ldply(1:nrow(inc.groupID),function(i){
+            if(isTRUE(nrow(inc.groupID)>0)){
+              fm.inc<-fm.inc[fm.inc$ID>=inc.groupID[i,]$IDmin&
+                               fm.inc$ID<=inc.groupID[i,]$IDmax,]
+            } else {fm.inc=fm.inc}
+            sum.fm<-sum(fm.inc$vary.Fm,na.rm=T)
+            sum.Yield.dec<-
+              sum(abs(fm.inc$vary.Yield[fm.inc$vary.Yield<0]),na.rm=T)
+            # total increase in Fm is equal or more than 20% and
+            # total decrease in Yield is equal or more than 10%
+            if (isTRUE(sum.fm>=0.2&sum.Yield.dec>=0.1)){return(fm.inc)}
 
-    if(nrow(fm.dec)>0){
-      dec.groupID<-
-        do.call(rbind,by(fm.dec,cumsum(c(0,diff(fm.dec$ID)!=1)),
-                         function(g) data.frame(IDmin=min(g$ID),IDmax=max(g$ID),
-                                                IDrange=diff(range(g$ID)))))
-      fm.dec<-
-        ldply(1:nrow(dec.groupID),function(i){
-          if(nrow(dec.groupID)>0){
-            fm.dec<-fm.dec[fm.dec$ID>=dec.groupID[i,]$IDmin&
-                             fm.dec$ID<=dec.groupID[i,]$IDmax,]
-          } else {fm.dec=fm.dec}
-          sum.fm<-abs(sum(fm.dec$vary.Fm,na.rm = T))
-          sum.Yield.inc<-sum(abs(fm.dec$vary.Yield[fm.dec$vary.Yield>0]))
+          })}
 
-          # total decrease in Fm is equal or more than 10% and
-          # total increase in Yield is equal or more than 10%
-          if (sum.fm>=0.1&sum.Yield.inc>=0.1&
-              TRUE%in%(max(fm.dec$datetime,na.rm=T)-fm.inc$datetime<=0))
-          {return(fm.dec)}
+      if(isTRUE(nrow(fm.dec)>0)){
+        dec.groupID<-
+          do.call(rbind,by(fm.dec,cumsum(c(0,diff(fm.dec$ID)!=1)),
+                           function(g) data.frame(IDmin=min(g$ID),IDmax=max(g$ID),
+                                                  IDrange=diff(range(g$ID)))))
+        fm.dec<-
+          ldply(1:nrow(dec.groupID),function(i){
+            if(isTRUE(nrow(dec.groupID)>0)){
+              fm.dec<-fm.dec[fm.dec$ID>=dec.groupID[i,]$IDmin&
+                               fm.dec$ID<=dec.groupID[i,]$IDmax,]
+            } else {fm.dec=fm.dec}
+            sum.fm<-abs(sum(fm.dec$vary.Fm,na.rm = T))
+            sum.Yield.inc<-sum(abs(fm.dec$vary.Yield[fm.dec$vary.Yield>0]))
 
-        })}
+            # total decrease in Fm is equal or more than 10% and
+            # total increase in Yield is equal or more than 10%
+            if (isTRUE(sum.fm>=0.1&sum.Yield.inc>=0.1&
+                TRUE%in%(max(fm.dec$datetime,na.rm=T)-fm.inc$datetime<=0)))
+            {return(fm.dec)}
+
+          })}
 
 
-    #apply the filter function when both consecutive decrease and increase exist
+      #apply the filter function when both consecutive decrease and increase exist
 
-    if (nrow(fm.inc)>0&nrow(fm.dec)>0){
-      if(TRUE%in%(max(fm.dec$datetime,na.rm=T)-fm.inc$datetime<0)){
-        data.select<-
-          oneday[oneday$datetime>=min(fm.dec$datetime)&
-                   oneday$datetime<=max(fm.inc$datetime),]
+      if (isTRUE(nrow(fm.inc)>0&nrow(fm.dec)>0)){
+        if(isTRUE(TRUE%in%(max(fm.dec$datetime,na.rm=T)-fm.inc$datetime<0))){
+          data.select<-
+            oneday[oneday$datetime>=min(fm.dec$datetime)&
+                     oneday$datetime<=max(fm.inc$datetime),]
 
-        data.select<-data.select[order(data.select$datetime),]
-        data.select<-
-          oneday[
-            #also expand the focused data go back one more point
-            c(which(oneday$datetime%in%data.select$datetime)[1]-1,
-              which(oneday$datetime%in%data.select$datetime)),]
-        # ***********************************************************
-        ##>> impossible case
-        ##>> 1. Yield increases then decreases, Fm' and F' decreases
-        ##>>    than increases a lot
-        if (fm1>=0&fmPhiPratio>=1){
+          data.select<-data.select[order(data.select$datetime),]
+          data.select<-
+            oneday[
+              #also expand the focused data go back one more point
+              c(which(oneday$datetime%in%data.select$datetime)[1]-1,
+                which(oneday$datetime%in%data.select$datetime)),]
+          # ***********************************************************
+          ##>> impossible case
+          ##>> 1. Yield increases then decreases, Fm' and F' decreases
+          ##>>    than increases a lot
+          if (isTRUE(fm1>=0&fmPhiPratio>=1)){
 
-          data.select$flag3.day[
-            (data.select$vary.Yield>=0&
-               data.select$vary.Fm<=(-1*fm1))|
-              (data.select$vary.Yield<=0&
-                 data.select$vary.Fm>=fm1)|
-              (data.select$vary.Fm<=(-1*fm1)&
-                 data.select$vary.Fm/data.select$vary.Yield>=fmPhiPratio)]<-0
-        }
-        data.select2<-data.select
-        # repeat for all the data until all the abnormal points were found
-        trials <- 0
-        while(nrow(data.select2[data.select2$flag3.day==0,])>0){
-          data.select2<-data.select2[data.select2$flag3.day==1,]
-          data.select2<-data.select2[order(data.select2$datetime),]
-          #calculate percentage changes in Yield, Fm', and F'
-          data.select2$vary.Yield<-
-            c(NA,diff(data.select2$Yield))/data.select2$Yield
-          data.select2$vary.Fm<-
-            c(NA,diff(data.select2$Fm_))/data.select2$Fm_
-          data.select2$vary.F<-
-            c(NA,diff(data.select2$F_))/data.select2$F_
-          data.select2$flag3.day[
-            (data.select2$vary.Yield>=0&
-               data.select2$vary.Fm<=(-1*fm1))|
-              (data.select2$vary.Yield<=0&
-                 data.select2$vary.Fm>=fm1)|
-              (data.select2$vary.Fm<=(-1*fm1)&
-                 data.select2$vary.Fm/data.select2$vary.Yield>=fmPhiPratio)
-          ]<-0
-          trials <- trials +1
-        }
-        oneday$flag3.day[oneday$datetime%in%
-                           data.select$datetime[!data.select$datetime%in%
-                                                  data.select2$datetime]]<-0
+            data.select$flag3.day[
+              (data.select$vary.Yield>=0&
+                 data.select$vary.Fm<=(-1*fm1))|
+                (data.select$vary.Yield<=0&
+                   data.select$vary.Fm>=fm1)|
+                (data.select$vary.Fm<=(-1*fm1)&
+                   data.select$vary.Fm/data.select$vary.Yield>=fmPhiPratio)]<-0
+          }
+          data.select2<-data.select
+          # repeat for all the data until all the abnormal points were found
+          trials <- 0
+          while(nrow(data.select2[data.select2$flag3.day==0,])>0){
+            data.select2<-data.select2[data.select2$flag3.day==1,]
+            data.select2<-data.select2[order(data.select2$datetime),]
+            #calculate percentage changes in Yield, Fm', and F'
+            data.select2$vary.Yield<-
+              c(NA,diff(data.select2$Yield))/data.select2$Yield
+            data.select2$vary.Fm<-
+              c(NA,diff(data.select2$Fm_))/data.select2$Fm_
+            data.select2$vary.F<-
+              c(NA,diff(data.select2$F_))/data.select2$F_
+            data.select2$flag3.day[
+              (data.select2$vary.Yield>=0&
+                 data.select2$vary.Fm<=(-1*fm1))|
+                (data.select2$vary.Yield<=0&
+                   data.select2$vary.Fm>=fm1)|
+                (data.select2$vary.Fm<=(-1*fm1)&
+                   data.select2$vary.Fm/data.select2$vary.Yield>=fmPhiPratio)
+            ]<-0
+            trials <- trials +1
+          }
+          oneday$flag3.day[oneday$datetime%in%
+                             data.select$datetime[!data.select$datetime%in%
+                                                    data.select2$datetime]]<-0
 
-      }}
-    return(oneday)
+        }}
+      return(oneday)
+    }
 
   })
   data$flag3.day[
@@ -133,33 +140,36 @@ filter.o.fc<-function(data,fm1,fmPhiPratio){
   return(data)
 }
 
+# filter logical function 2
 filter.pm.fc<-function(data,PhiP,fm1){
 
-  data<-data[data$flag3.day==1,
-             c('date','datetime','dateBack12h','datetimeBack12h',
-               'solarNoon','dawn','sunrise',
-               'sunsetStart', 'dusk',
-               'temp_moni','par_moni', 'F_','Fm_',
-               'Yield','flag3.day')]
+  data<-
+    data %>%
+    subset(flag3.day==1,select=c('date','datetime','dateBack12h',
+                                 'datetimeBack12h','solarNoon','dawn','sunrise',
+                                 'sunsetStart', 'dusk','temp_moni','par_moni',
+                                 'F_','Fm_','Yield','flag3.day'))
 
   moni.pm<-ldply(unique(data$date),function(i){
-    #i=unique(data$date)[253]
     day.pm<-
-      na.omit(data[data$date==i&
-                     data$datetime>=data$solarNoon&
-                     data$datetime<=data$dusk+3600,])
-    day.pm<-day.pm[order(day.pm$datetime),]
+      data %>%
+      subset(date==i&datetime>=solarNoon&datetime<=dusk+3600) %>%
+      na.omit()
+    if (isTRUE(nrow(day.pm)>0)){ # run following code only if data exist
 
-    day.pm$vary.Yield<-c(NA,diff(day.pm$Yield))/day.pm$Yield
-    day.pm$vary.Fm<-c(NA,diff(day.pm$Fm_))/day.pm$Fm_
-    day.pm$vary.F<- c(NA,diff(day.pm$F_))/day.pm$F_
-    if (PhiP>=0&fm1>=0){
+      day.pm<-day.pm[order(day.pm$datetime),]
 
-      ##> impossible cases
-      ##> 1. Yield increases or has slightly changes, but Fm' decreases a lot
-      day.pm$flag3.day[(day.pm$vary.Yield>=(-1*PhiP)&
-                          day.pm$vary.Fm<=(-1*fm1))]<-0
+      day.pm$vary.Yield<-c(NA,diff(day.pm$Yield))/day.pm$Yield
+      day.pm$vary.Fm<-c(NA,diff(day.pm$Fm_))/day.pm$Fm_
+      day.pm$vary.F<- c(NA,diff(day.pm$F_))/day.pm$F_
+      if (isTRUE(PhiP>=0&fm1>=0)){
 
+        ##> impossible cases
+        ##> 1. Yield increases or has slightly changes, but Fm' decreases a lot
+        day.pm$flag3.day[(day.pm$vary.Yield>=(-1*PhiP)&
+                            day.pm$vary.Fm<=(-1*fm1))]<-0
+
+      }
     }
     return(day.pm)
   })
@@ -169,15 +179,17 @@ filter.pm.fc<-function(data,PhiP,fm1){
   return(data)
 }
 
+# filter logical function 3
 filter.v.fc<-function(data){
 
   #selected data that not filtered from previous functions
-  data=data[data$flag3.day==1,
-            c('datetime','dateBack12h','datetimeBack12h',
-              'solarNoon','dawn','sunrise',
-              'sunsetStart',
-              'temp_moni','par_moni', 'F_','Fm_',
-              'Yield','flag3.day')]
+  data<-
+    data %>%
+    subset(flag3.day==1,select=c('datetime','dateBack12h','datetimeBack12h',
+                                 'solarNoon','dawn','sunrise',
+                                 'sunsetStart',
+                                 'temp_moni','par_moni', 'F_','Fm_',
+                                 'Yield','flag3.day'))
 
   moni.day<-ldply(unique(data$dateBack12h),function(d){#data from DAY1 12:00 to DAY2 12:00
 
@@ -190,7 +202,7 @@ filter.v.fc<-function(data){
 
     trial<-0
     while(nrow(oneday)>0){
-      if (exists('fm.v')){rm(fm.v)}
+      if (isTRUE(exists('fm.v'))){rm(fm.v)}
       oneday<-oneday[oneday$flag3.day==1,]
       oneday<-oneday[order(oneday$datetime),]
       oneday$ID<-1:nrow(oneday)
@@ -211,7 +223,7 @@ filter.v.fc<-function(data){
       fm.inc<-oneday[which(with(rle(oneday$vary.Fm>0),rep(lengths, lengths))>=1&
                              with(rle(oneday$vary.Fm>0),
                                   rep(values, lengths))==TRUE),]
-      if (nrow(fm.inc)>0&nrow(fm.dec)>0){
+      if (isTRUE(nrow(fm.inc)>0&nrow(fm.dec)>0)){
         inc.groupID<-
           do.call(rbind,by(fm.inc,cumsum(c(0,diff(fm.inc$ID)!=1)),
                            function(g) data.frame(IDmin=min(g$ID),IDmax=max(g$ID),
@@ -224,7 +236,7 @@ filter.v.fc<-function(data){
         fm.v<-
           ldply(1:nrow(dec.groupID),function(i){
 
-            if(nrow(dec.groupID)>0){
+            if(isTRUE(nrow(dec.groupID)>0)){
               #find the index (or row number) of decreased Fm
               fm.dec.i<-fm.dec[fm.dec$ID>=dec.groupID[i,]$IDmin&
                                  fm.dec$ID<=dec.groupID[i,]$IDmax,]
@@ -232,11 +244,11 @@ filter.v.fc<-function(data){
             dec.start<-fm.dec.i$ID[1]
             mean.dec<-mean(abs(fm.dec.i$vary.Fm[fm.dec.i$ID>=dec.start]))
 
-            if (!is.na(dec.start)&
+            if (isTRUE(!is.na(dec.start)&
                 mean.dec>=0.03&
                 #if decrease followed by an increase
                 TRUE%in%(dec.groupID[i,2]<inc.groupID$IDmin)
-            ){
+            )){
               inc.end<-min(inc.groupID$IDmax[dec.groupID[i,2]<inc.groupID$IDmin])
               #select the V shape data (fm consecutively decrease then increase)
               fm.v<-oneday[oneday$ID>=dec.start-1&oneday$ID<=inc.end,]
@@ -245,7 +257,7 @@ filter.v.fc<-function(data){
               maxF.dawn<-unique(fm.v$dawn[fm.v$datetime==maxF.time])
               maxF.sunrise<-unique(fm.v$sunrise[fm.v$datetime==maxF.time])
 
-              if (maxF.ID<max(fm.v$ID)){
+              if (isTRUE(maxF.ID<max(fm.v$ID))){
                 maxF.varyPAR<-
                   fm.v$par_moni[fm.v$ID==maxF.ID+1]-fm.v$par_moni[fm.v$ID==maxF.ID]
                 maxF.varyF<-
@@ -260,12 +272,12 @@ filter.v.fc<-function(data){
               #PAR was increasing in V shape period
               meanPAR<-mean(fm.v$par_moni)
               sum.decFm<-sum(abs(fm.v$vary.Fm[fm.v$vary.Fm<=0]),na.rm = T)
-              if(TRUE%in%(fm.v$vary.Fm>0.03)) {
+              if(isTRUE(TRUE%in%(fm.v$vary.Fm>0.03))) {
                 mean.incFm<-mean(fm.v$vary.Fm[fm.v$vary.Fm>0.03],na.rm=T)
               } else {
                 mean.incFm=mean(fm.v$vary.Fm[fm.v$vary.Fm>0],na.rm=T)
               }
-              if (!(maxF.time>=maxF.dawn&
+              if (isTRUE(!(maxF.time>=maxF.dawn&
                     maxF.ID%in%fm.v$ID[fm.v$vary.Fm<0]&
                     maxF.ID<min(minF.ID)&
                     maxF.varyF<0)&# this part means if all conditions occurred,
@@ -284,33 +296,33 @@ filter.v.fc<-function(data){
                   )&
                   mean.incFm>0.05
 
-              ){# make sure last few points are not [good point (vary.Fm<=0.03,
+              )){# make sure last few points are not [good point (vary.Fm<=0.03,
                 # namely did not change so much)]
                 #m=(1:nrow(fm.v))[1]]
                 fm.v<-fm.v[-1,]
                 rmStart.index<-NA
                 for(m in (1:nrow(fm.v))) {
-                  if(abs(fm.v$vary.Fm[m])>0.03){#if changes in start is small,
+                  if(isTRUE(abs(fm.v$vary.Fm[m])>0.03)){#if changes in start is small,
                     #this data will not be removed,i.e., this data will be removed
                     # from fm.v
                     break
                   } else {rmStart.index[m]<-m}
                 }
 
-                if (FALSE%in%is.na(rmStart.index)){
+                if (isTRUE(FALSE%in%is.na(rmStart.index))){
                   fm.v<-fm.v[-rmStart.index,]
                 }
 
                 rmEnd.index<-NA
                 for(n in (nrow(fm.v):1)) {
                   #n=(nrow(fm.v):1)[2]
-                  if(abs(fm.v$vary.Fm[n])>0.03){
+                  if(isTRUE(abs(fm.v$vary.Fm[n])>0.03)){
                     break
                   } else {rmEnd.index[n]<-n}#if changes in the end of v shape is
                   #small, this data will be removed, i.e., this data will be
                   #removed from fm.v
                 }
-                if (FALSE%in%is.na(rmEnd.index)){
+                if (isTRUE(FALSE%in%is.na(rmEnd.index))){
                   fm.v<-fm.v[-rmEnd.index[is.na(rmEnd.index)==F],]
                 }
                 return(fm.v)
@@ -321,9 +333,9 @@ filter.v.fc<-function(data){
           })
 
         trial=trial+1
-        if(nrow(fm.v)>0){fm.v=fm.v} else { rm(fm.v) }
+        if(isTRUE(nrow(fm.v)>0)){fm.v=fm.v} else { rm(fm.v) }
       }
-      if (!exists('fm.v')){
+      if (isTRUE(!exists('fm.v'))){
         break
       } else {
         oneday$flag3.day[oneday$ID%in%fm.v$ID]<-0
@@ -347,6 +359,7 @@ filter.v.fc<-function(data){
 #'
 #' Details see Zhang et al.,202X. paper link url.
 #'
+#' @usage filter3.day(moni.data,PhiP=0.02,fm1=0.1,fmPhiPratio=3,save.path,save.file)
 #' @param moni.data a data.table or data.frame MONI-PAM data generated from [filter2.night] function.
 #' @param PhiP the threshold of percentage change of Yield between time2 and time1. Default value is 0.02, we recommend this argument can be adjusted from 0.01 to 0.05 by an interval of 0.01.
 #' @param fm1 the threshold of percentage change of Fm' between time2 and time1. Default value is 0.1, we recommend this argument can be adjusted from 0.01 to 0.2 by an interval of 0.05.
@@ -364,18 +377,17 @@ filter3.day<-function(moni.data,PhiP=0.02,
 {
   start.time<-Sys.time()
   print('This function will run few mins...')
-  moni.data<-format.monidata(moni.data = moni.data)
+  moni.data<-formatMONIdata(moni.data = moni.data)
 
   day.filter<-
     ldply(levels(moni.data$head_tree),function(i){
       moni.onetree<- moni.data[moni.data$head_tree==i,]
-      if (nrow(moni.onetree)>0) {#if data exsit
+      if (isTRUE(nrow(moni.onetree)>0)) {#if data exsit
         ##<<- the data should be filtered following the
         ##<<- correct date and time order
         ##<<- so order() function is used here to make sure correct time order
         moni.onetree<-moni.onetree[order(moni.onetree$datetime),]
         moni.onetree$flag3.day<-1
-
         filter.onetree<-
           filter.o.fc(data=moni.onetree,fm1=fm1,fmPhiPratio=fmPhiPratio)
         trials <- 0
@@ -388,7 +400,7 @@ filter3.day<-function(moni.data,PhiP=0.02,
 
         filter.onetree2<-filter.pm.fc(data=filter.onetree,PhiP = PhiP,fm1=fm1)
         trials <- 0
-        while(nrow(filter.onetree2[filter.onetree2$flag3.day==0,])>0){
+        while(isTRUE(nrow(filter.onetree2[filter.onetree2$flag3.day==0,])>0)){
           filter.onetree2<-filter.pm.fc(data=filter.onetree2,PhiP = PhiP,fm1=fm1)
           trials <- trials +1
         }
@@ -400,7 +412,7 @@ filter3.day<-function(moni.data,PhiP=0.02,
       return(moni.onetree)
     })
 
-  if (save.file==T){
+  if (isTRUE(save.file==T)){
     print('The filter is done, now save the filtered data into file.')
   } else {print('The filter is done')}
   day.filter[day.filter$flag3.day==0,c('F_','Fm_','Yield')]<-NA
@@ -419,7 +431,7 @@ filter3.day<-function(moni.data,PhiP=0.02,
                              'head_tree',"flag1.NA.Yield",
                              'flag2.night','flag3.day',
                              'flag.all')])
-  if (save.file==T){
+  if (isTRUE(save.file==T)){
     write.table(day.filter,file =
                   paste0(save.path,'/MONI_',year(range(day.filter$date)[1]),
                          '_', year(range(day.filter$date)[2]),

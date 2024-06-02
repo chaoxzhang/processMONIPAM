@@ -1,3 +1,4 @@
+# filter logical function
 filter.lowfm.fc<-function(data,fm1,fmPhiPratio){
   data=data[
     data$flag5.lowfm==1,c('date','datetime','F_','Fm_','Yield','flag5.lowfm')]
@@ -31,6 +32,7 @@ filter.lowfm.fc<-function(data,fm1,fmPhiPratio){
 #'
 #' Details see Zhang et al.,202X. paper link url.
 #'
+#' @usage filter5.lowfm(moni.data,save.path,save.file,fm1=0.2,fmPhiPratio=3)
 #' @param moni.data a data.table or data.frame MONI-PAM data generated from [filter4.maxYield] function.
 #' @param save.path local folder for saving your output file
 #' @param save.file If this argument is set as TRUE, the returned file will be saved to local folder, if FALSE, the file will not be saved into local folder
@@ -38,6 +40,7 @@ filter.lowfm.fc<-function(data,fm1,fmPhiPratio){
 #' @param fmPhiPratio the threshold of ratio between percentage change of Fm' between time2 and time1 and of Yield between time2 and time1. Default value is 3, we recommend this argument can be adjust between 2 and 5 by an interval of 1.
 #'
 #' @return [filter5.lowfm] will return a data table. Meanwhile, if save.file = TRUE, the output data.table will also be saved into local folder as a 'MONI_Year1_Year2_filter5lowfm.dat' file, where Year1 and Year2 are the minimum and maximum year during this observation season respectively. This output file will contain one new column compared with output file from [filter4.maxYield] function named as 'flag5.lowfm'. This column only contain two values: 0 and 1, where 0 means F', Fm' and Yield in corresponding row(s) are abnormal data and should be removed from the dataset and 1 means good dataset.
+#' @export
 filter5.lowfm<-function(moni.data,
                         save.path,
                         save.file,
@@ -45,7 +48,7 @@ filter5.lowfm<-function(moni.data,
                         fmPhiPratio=3){
   start.time<-Sys.time()
   print('This function will run mins')
-  moni.data<-format.monidata(moni.data = moni.data)
+  moni.data<-formatMONIdata(moni.data = moni.data)
   lowfm.filter<-
     ldply(levels(moni.data$head_tree),function(i){
       ##<<- the data should be filtered following the

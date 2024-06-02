@@ -4,14 +4,7 @@
 \alias{filter3.day}
 \title{Filter MONI-PAM data step 3,remove abnormal F', Fm' and Yield value during the day}
 \usage{
-filter3.day(
-  moni.data,
-  PhiP = 0.02,
-  fm1 = 0.1,
-  fmPhiPratio = 3,
-  save.path,
-  save.file
-)
+filter3.day(moni.data,PhiP=0.02,fm1=0.1,fmPhiPratio=3,save.path,save.file)
 }
 \arguments{
 \item{moni.data}{a data.table or data.frame MONI-PAM data generated from \link{filter2.night} function.}

@@ -2,6 +2,7 @@
 #'
 #' Details see Zhang et al.,202X. paper link url.
 #'
+#' @usage filter6.neighbor(moni.data,save.path,save.file,expand.time)
 #' @param moni.data a data.table or data.frame MONI-PAM data generated from [filter5.lowfm] function.
 #' @param save.path local folder for saving your output file
 #' @param save.file If this argument is set as TRUE, the returned file will be saved to local folder, if FALSE, the file will not be saved into local folder
@@ -15,7 +16,7 @@ filter6.neighbor<-function(moni.data,
                         expand.time){
   start.time<-Sys.time()
   print('This function will around 1 min.')
-  moni.data<-format.monidata(moni.data = moni.data)
+  moni.data<-formatMONIdata(moni.data = moni.data)
   neighbor.filter<-
     ldply(levels(moni.data$head_tree),function(i){
       print(paste0(i, ' is filtering...'))

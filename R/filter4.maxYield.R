@@ -1,4 +1,4 @@
-# fisrt filter logical function
+# filter logical function 1
 filter.maxYield.fc41<-function(data,fm1,fmPhiPratio){
   data<-data[data$flag4.maxYield==1,]
   moni.night<-
@@ -59,7 +59,9 @@ filter.maxYield.fc41<-function(data,fm1,fmPhiPratio){
 
   return(data)
 }
-# second filter logical function
+
+
+# filter logical function 2
 filter.maxYield.fc42<-function(data,fm1,fmPhiPratio){
   data<-data[data$flag4.maxYield==1,]
   moni.night<-
@@ -119,6 +121,7 @@ filter.maxYield.fc42<-function(data,fm1,fmPhiPratio){
 #'
 #' Details see Zhang et al.,202X. paper link url.
 #'
+#' @usage filter4.maxYield(moni.data,save.path,save.file,fm1=0.15,fmPhiPratio=3)
 #' @param moni.data a data.table or data.frame MONI-PAM data generated from [filter3.day] function.
 #' @param save.path local folder for saving your output file
 #' @param save.file If this argument is set as TRUE, the returned file will be saved to local folder, if FALSE, the file will not be saved into local folder
@@ -135,7 +138,7 @@ filter4.maxYield<-function(moni.data,
                            ){
   print('This function will run mins...' )
 
-  moni.data<-format.monidata(moni.data = moni.data)
+  moni.data<-formatMONIdata(moni.data = moni.data)
   start.time<-Sys.time()
   maxYield.filter<-
     ldply(levels(moni.data$head_tree),function(i){

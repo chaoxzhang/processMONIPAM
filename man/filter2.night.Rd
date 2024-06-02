@@ -4,7 +4,7 @@
 \alias{filter2.night}
 \title{Filter MONI-PAM data step 2,remove abnormal F', Fm' and Yield value from the night}
 \usage{
-filter2.night(moni.data, fm1 = 0.03, fmPhiPratio = 3, save.path, save.file)
+filter2.night(moni.data,fm1=0.03,fmPhiPratio=3,save.path,save.file)
 }
 \arguments{
 \item{moni.data}{a data.table or data.frame MONI-PAM data generated from \link{filter1.NA} function.}

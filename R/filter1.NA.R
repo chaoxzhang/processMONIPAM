@@ -1,8 +1,9 @@
 #' Filter MONI-PAM data step 1,remove unrecorded or abnormal low F' and Fm' value
 #'
-# Details see Zhang et al.,202X. paper link url.
+#' Details see Zhang et al.,202X. paper link url.
 #'
-#' @param moni.data a combined organized MONI-PAM data which is generated from [read.MONIPAM] function.
+#' @usage filter1.NA(moni.data,save.path,save.file)
+#' @param moni.data a combined organized MONI-PAM data which is generated from [readMONIPAM] function.
 #' @param save.path local folder for saving your output file
 #' @param save.file If this argument is set as TRUE, the returned file will be saved to local folder, if FALSE, the file will not be saved into local folder
 #'
@@ -11,7 +12,7 @@
 filter1.NA<-function(moni.data,
                      save.path, save.file){
 
-  moni.data<-format.monidata(moni.data = moni.data)
+  moni.data<-formatMONIdata(moni.data = moni.data)
 
   ##<<- add a column 'flag1.NA.Yield' to flag empty data of Yield
   ##<<- firstly all the data of column 'flag1.NA.Yield' will be 1,
