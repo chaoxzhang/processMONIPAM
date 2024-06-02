@@ -14,8 +14,8 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 knitr::opts_chunk$set(eval = FALSE)
-
 ```
+
 # Install processMONIPAM package using:
 
 ```{r}
